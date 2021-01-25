@@ -111,6 +111,7 @@ def timetables_collect_all(dir_to_save: str, apikey: str=APIKEY, verbose: bool=F
                     json.dump(timetable, f)
 
                 if verbose:
+                    # TODO change this to actual file name
                     print(f"{busstopId} {busstopNr} line {line} is saved.")
 
             if ((row_count+1) % 500) == 0:
