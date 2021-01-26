@@ -61,7 +61,7 @@ def calc_velocity(dir_to_busestrams: str):
         tmp = np.sum(time_diffs == 0)
         if tmp > 0 :
             print(bus_file)
-            
+
         velocity = dist(lat1, lon1, lat2, lon2) / time_diffs
 
         # For now, velocity is in km/s. Convert it into km/h:

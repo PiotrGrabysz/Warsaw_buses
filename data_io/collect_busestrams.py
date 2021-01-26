@@ -36,12 +36,15 @@ def busestrams_get(dir_to_save: str, type: int=1, timeout: float=1.0):
                 # a list of dictionaries. In that case, attempt to access record["lines"] will raise TypeError
                 line = record["Lines"]
                 brigade = record["Brigade"]
-                vehicle = record["Vehicle"]
+                # Sometimes a weird bug happens and Brigade number is " ".
+                if brigade == " ":
+                    brigade = "not_given"
+                vehicle = record["VehicleNumber"]
             except (KeyError, TypeError) as e:
                 with errors_log_file_name.open("a") as errors_file:
                     errors_file.write(f"Error {e} catch at {datetime.now()} in row: {record}\n")
             else:
-                f_path = Path.cwd() / dir_to_save / str(line) / brigade
+                f_path = Path.cwd() / dir_to_save / str(line) / str(brigade)
                 Path(f_path).mkdir(parents=True, exist_ok=True)
                 f_name = f_path.joinpath(f"{vehicle}.txt")
 
@@ -61,10 +64,9 @@ def busestrams_get(dir_to_save: str, type: int=1, timeout: float=1.0):
                             f.write(f"{row}\n")
 
                 except FileNotFoundError:
-                    # Create new file
+                    # Create new
                     with f_name.open("w") as f:
                         f.write(f"{row}\n")
-
 
 
 def collect_busestrams(dir_to_save: str, type: int=1, time_step: float=1.0, how_long: float=60.0):
