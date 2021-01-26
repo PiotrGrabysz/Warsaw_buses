@@ -29,16 +29,7 @@ def dist(lat1, lon1, lat2, lon2):
 
 def calc_velocity(dir_to_busestrams: str):
 
-    # for path in Path(dir_to_busestrams).iterdir():
-    #     if path.is_dir():
-    #         pass
-    # for file_name in os.listdir(folder_name):
-    #     if file_name.endswith(".json"):
-    #         file_path = os.path.join(folder_name, file_name)
-    #         with open(file_path) as file:
-    #             data = json.load(file)
-
-    p = Path(dir_to_busestrams).glob('*/*')
+    p = Path(dir_to_busestrams).glob('*/*/*')
     # files_list is a list of all files in the directory dir_to_busestrams
     files_list = [x for x in p if x.is_file()]
     for bus_file in files_list:
@@ -58,26 +49,22 @@ def calc_velocity(dir_to_busestrams: str):
         lat2 = bus_data["Lat"].to_numpy()[:-1]
         lon2 = bus_data["Lon"].to_numpy()[:-1]
 
-        tmp = np.sum(time_diffs == 0)
-        if tmp > 0 :
-            print(bus_file)
-
         velocity = dist(lat1, lon1, lat2, lon2) / time_diffs
 
         # For now, velocity is in km/s. Convert it into km/h:
         velocity = velocity * 3600.
 
         # Creating new pd.DataFrame
-        new_bus_data = bus_data.iloc[1:].assign(velocity=velocity)
+        new_bus_data = bus_data.iloc[1:].assign(Velocity=velocity)
 
         # Saving new data frame to a file.
         # I want to save this file in another directory than bus_data to be sure that it didn't mess around anything in
         # the original data. But I want this new directory to have similar structure.
         file_path_split = bus_file.parts
         # The new directory has the same beginning, but name of folder with all buses is suffixed with "_with_velocity"
-        new_file_path = Path("/".join(file_path_split[:-3])) / (file_path_split[-3] + "_with_velocity")
+        new_file_path = Path("/".join(file_path_split[:-4])) / (file_path_split[-4] + "_with_velocity")
         # file_path_split[-2] is the line number of the bus
-        new_file_path = new_file_path / file_path_split[-2]
+        new_file_path = new_file_path / file_path_split[-3] / file_path_split[-2]
         # Create new directory in case it doesn't exist yet
         Path(new_file_path).mkdir(parents=True, exist_ok=True)
         # Append file_name (brigade number) to the new_path
@@ -86,10 +73,31 @@ def calc_velocity(dir_to_busestrams: str):
         new_bus_data.to_csv(new_file_path)
 
 
+def percent_of_times_when_exceeding_given_speed(dir_to_data: str, speed: float = 50.):
+
+    total_number_of_records = 0
+    exceeding_speed = 0
+
+    p = Path(dir_to_data).glob('*/*/*')
+    # files_list is a list of all files in the directory dir_to_busestrams
+    files_list = [x for x in p if x.is_file()]
+    for bus_file in files_list:
+        bus_data = pd.read_csv(bus_file, usecols=["Velocity"])
+        total_number_of_records += len(bus_data)
+        exceeding_speed += sum(bus_data["Velocity"] > speed)
+
+    print(f"Percent of times when any bus exceeds {speed} km/h vs all measurements is "
+          f"{100*exceeding_speed/total_number_of_records :.2f}%.")
+
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--dir", "-d", type=str)
     args = parser.parse_args()
 
-    calc_velocity(dir_to_busestrams=args.dir)
+    # calc_velocity(dir_to_busestrams=args.dir)
+    print("calc_velocity run successfully.")
+
+    new_path = args.dir + "_with_velocity"
+    percent_of_times_when_exceeding_given_speed(dir_to_data=new_path)
