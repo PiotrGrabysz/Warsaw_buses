@@ -36,13 +36,14 @@ def busestrams_get(dir_to_save: str, type: int=1, timeout: float=1.0):
                 # a list of dictionaries. In that case, attempt to access record["lines"] will raise TypeError
                 line = record["Lines"]
                 brigade = record["Brigade"]
+                vehicle = record["Vehicle"]
             except (KeyError, TypeError) as e:
                 with errors_log_file_name.open("a") as errors_file:
                     errors_file.write(f"Error {e} catch at {datetime.now()} in row: {record}\n")
             else:
-                f_path = Path.cwd() / dir_to_save / str(line)
+                f_path = Path.cwd() / dir_to_save / str(line) / brigade
                 Path(f_path).mkdir(parents=True, exist_ok=True)
-                f_name = f_path.joinpath(f"{brigade}.txt")
+                f_name = f_path.joinpath(f"{vehicle}.txt")
 
                 # Row of data is latidute, Llngitude and time
                 row = ",".join([str(record["Lat"]), str(record["Lon"]), record["Time"]])
