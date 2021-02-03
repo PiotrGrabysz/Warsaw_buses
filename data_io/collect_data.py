@@ -3,18 +3,16 @@ import json
 from pathlib import Path
 from typing import Union
 
-
 APIKEY = "96bc1c08-5f6e-411e-a69a-bdbff719bc7e"
 
-def busestrams(line: int, brigade: int, type: str="bus", apikey: str=APIKEY, step: int=1.0, how_long: int=60):
+
+def busestrams(line: int, brigade: int, type: str = "bus", apikey: str = APIKEY, step: int = 1.0, how_long: int = 60):
     url = ""
     resource_id = ""
 
 
-
-def timetables_request(action: str, busstopId: str=None, busstopNr: str=None, line: int=None,
-                       apikey: str=APIKEY, timeout: float=1.0):
-
+def timetables_request(action: str, busstopId: str = None, busstopNr: str = None, line: int = None,
+                       apikey: str = APIKEY, timeout: float = 1.0):
     if action == "stops_coord":
         # All the bus stops coordinates
         url = "https://api.um.warszawa.pl/api/action/dbstore_get"
@@ -29,7 +27,7 @@ def timetables_request(action: str, busstopId: str=None, busstopNr: str=None, li
         params = dict(id="88cd555f-6f31-43ca-9de4-66c479ad5942",
                       busstopId=busstopId, busstopNr=busstopNr,
                       apikey=APIKEY
-                     )
+                      )
 
     elif action == "timetable":
         url = "https://api.um.warszawa.pl/api/action/dbtimetable_get"
@@ -41,8 +39,9 @@ def timetables_request(action: str, busstopId: str=None, busstopNr: str=None, li
 
     return r["result"]
 
-def timetables_collect_all(dir_to_save: str, apikey: str=APIKEY, verbose: bool=False,
-                           resume_from_row: int=0, repeat_rows_file: Union[None, str]=None):
+
+def timetables_collect_all(dir_to_save: str, apikey: str = APIKEY, verbose: bool = False,
+                           resume_from_row: int = 0, repeat_rows_file: Union[None, str] = None):
     """ stops() -> lines_wrt_stop -> timetable_wrt_line_and_stop"""
 
     if repeat_rows_file is not None or resume_from_row > 0:
@@ -62,11 +61,18 @@ def timetables_collect_all(dir_to_save: str, apikey: str=APIKEY, verbose: bool=F
             json.dump(stops_coord, f)
         print("Bus stops coordinates saved to a file.")
 
+    # if repeat_rows_file is not None:
+    #     with repeat_rows_file.open("r") as f:
+    #         repeat_rows = f
+    # else:
+    #     repeat_rows = []
+
+    # For now I assume that rows are loaded from error_log
+    repeat_rows = []
     if repeat_rows_file is not None:
-        with repeat_rows_file.open("r") as f:
-            repeat_rows = f
-    else:
-        repeat_rows = []
+        with open(repeat_rows_file, "r") as f:
+            for line in f:
+                repeat_rows.append(line.split(" ")[0])
 
     errors_log_file_name = Path.cwd().joinpath(dir_to_save, "errors_log.txt")
     errors_count = 0
@@ -88,16 +94,16 @@ def timetables_collect_all(dir_to_save: str, apikey: str=APIKEY, verbose: bool=F
                 with errors_log_file_name.open("a") as errors_file:
                     errors_file.write(f"{row_count} {e}\n")
                 errors_count += 1
-                
+
             for line in lines:
                 line = line["values"][0]["value"]
 
                 if verbose:
                     print(f"Requesting line {line} at stop {row[2]['value']} nr {busstopNr} timetable.")
-                
+
                 try:
-                    timetable = timetables_request(action="timetable", busstopId=busstopId, 
-                                                   busstopNr= busstopNr, line=line)
+                    timetable = timetables_request(action="timetable", busstopId=busstopId,
+                                                   busstopNr=busstopNr, line=line)
                 except requests.exceptions.RequestException as e:
                     print(f"{e} occurred. I skip the row {row_count} {busstopId} {busstopNr} {line}")
                     with errors_log_file_name.open("a") as errors_file:
@@ -114,9 +120,9 @@ def timetables_collect_all(dir_to_save: str, apikey: str=APIKEY, verbose: bool=F
                     # TODO change this to actual file name
                     print(f"{busstopId} {busstopNr} line {line} is saved.")
 
-            if ((row_count+1) % 500) == 0:
-                print(f"Processed {row_count+1} rows.")
-    
+            if ((row_count + 1) % 500) == 0:
+                print(f"Processed {row_count + 1} rows.")
+
     if errors_count > 0:
         print(f"{errors_count} connection errors occurred. See {errors_log_file_name} for details")
 
@@ -128,32 +134,31 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dir_to_save", "-d", type=str, help="")
     parser.add_argument("--verbose", "-v", action="store_true")
-    parser.add_argument("--repeat_rows_file",  "-r", type=Union[str, None], default=None)
+    parser.add_argument("--repeat_rows_file", "-r", type=str, default=None)
     parser.add_argument("--resume_from_row", "-r_row", type=int, default=0)
 
-    # parser.add_argument("--action", "-a", type=str, help="")
-    # parser.add_argument("--busstopId", "-Id", type=int)
-    # parser.add_argument("--busstopNr", "-Nr", type=str)
-    # parser.add_argument("--line", type=int)
+    parser.add_argument("--action", "-a", type=str, help="")
+    parser.add_argument("--busstopId", "-Id", type=int)
+    parser.add_argument("--busstopNr", "-Nr", type=str)
+    parser.add_argument("--line", type=int)
     args = parser.parse_args()
 
     # Check if the given path exists and if it doesn't, a new directory is created.
     # If the path already exists, the user is asked if he wants to use this directory or close the program
-    # try:
-    #     Path(args.dir_to_save).mkdir(parents=True, exist_ok=False)
-    # except FileExistsError:
-    #     print("This directory already exist. Do you want to proceed (you risk overwriting some files)?")
-    #     user_ans = input("y : n")
-    #     if user_ans == "y":
-    #         Path(args.dir_to_save).mkdir(parents=True, exist_ok=True)
-    #     else:
-    #         sys.exit("Closing the program")
+    try:
+        Path(args.dir_to_save).mkdir(parents=True, exist_ok=False)
+    except FileExistsError:
+        print("This directory already exist. Do you want to proceed (you risk overwriting some files)?")
+        user_ans = input("y : n")
+        if user_ans == "y":
+            Path(args.dir_to_save).mkdir(parents=True, exist_ok=True)
+        else:
+            sys.exit("Closing the program")
 
-
-    # timetables_request(action=args.action, busstopId=args.busstopId,
+    # tmp = timetables_request(action=args.action, busstopId=args.busstopId,
     #                busstopNr=args.busstopNr, line=args.line)
+    # print(tmp)
+    # # IDEA: when velocity is bigger than 50 km/h check the closest bus stop from timetables
 
-    # IDEA: when velocity is bigger than 50 km/h check the closest bus stop from timetables
-    
     timetables_collect_all(dir_to_save=args.dir_to_save, verbose=args.verbose, repeat_rows_file=args.repeat_rows_file,
                            resume_from_row=args.resume_from_row)
