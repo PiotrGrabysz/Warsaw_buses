@@ -7,13 +7,12 @@ from typing import Union
 
 import timeit
 
-
 APIKEY = "96bc1c08-5f6e-411e-a69a-bdbff719bc7e"
 
-def busestrams_get(dir_to_save: str, type: int=1, timeout: float=1.0):
 
+def busestrams_get(dir_to_save: str, type: int = 1, timeout: float = 1.0):
     url = 'https://api.um.warszawa.pl/api/action/busestrams_get'
-    params = dict(resource_id = 'f2e5503e-927d-4ad3-9500-4ab9e55deb59',
+    params = dict(resource_id='f2e5503e-927d-4ad3-9500-4ab9e55deb59',
                   apikey=APIKEY,
                   type=type)
 
@@ -69,7 +68,7 @@ def busestrams_get(dir_to_save: str, type: int=1, timeout: float=1.0):
                         f.write(f"{row}\n")
 
 
-def collect_busestrams(dir_to_save: str, type: int=1, time_step: float=1.0, how_long: float=60.0):
+def collect_busestrams(dir_to_save: str, type: int = 1, time_step: float = 1.0, how_long: float = 60.0):
     """
     Collect busestrams data for given period of time.
     :param dir_to_save: A directory where the files with all the buses (or/and trams) will be stored
@@ -92,6 +91,7 @@ def collect_busestrams(dir_to_save: str, type: int=1, time_step: float=1.0, how_
             if time_diff > time_step:
                 print(f"Warning! Saving data to files takes {time_diff} which is longer than the chosen time step!")
 
+
 if __name__ == "__main__":
     import argparse
     import sys
@@ -100,7 +100,7 @@ if __name__ == "__main__":
     parser.add_argument("--dir_to_save", "-d", type=str,
                         help="A directory where the files with all the buses (or/and trams) will be stored")
     parser.add_argument("--time_step", type=float, default=6.0,
-                        help="he website will be requested every time_step (in seconds) or longer, if processing and /"
+                        help="The website will be requested every time_step (in seconds) or longer, if processing and /"
                              "saving the data takes more time than time_step")
     parser.add_argument("--how_long", type=float, default=60.0,
                         help="How long time the request will be send to the website (in seconds)")
@@ -119,4 +119,3 @@ if __name__ == "__main__":
             sys.exit("Closing the program")
 
     collect_busestrams(dir_to_save=args.dir_to_save, time_step=args.time_step, how_long=args.how_long)
-
