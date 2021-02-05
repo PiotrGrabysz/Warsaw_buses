@@ -7,9 +7,9 @@ APIKEY = "96bc1c08-5f6e-411e-a69a-bdbff719bc7e"
 
 
 def timetables_request(action: str, busstopId: str = None, busstopNr: str = None, line: int = None,
-                       apikey: str = APIKEY, timeout: float = 1.0):
+                       timeout: float = 1.0):
     if action == "stops_coord":
-        # All the bus stops coordinates
+        # Gets coordinates of all the buses and trams stops
         url = "https://api.um.warszawa.pl/api/action/dbstore_get"
         params = dict(id="ab75c33d-3a26-4342-b36a-6e5fef0a3ac3",
                       apikey=APIKEY
@@ -18,7 +18,6 @@ def timetables_request(action: str, busstopId: str = None, busstopNr: str = None
     elif action == "lines_wrt_stop":
         # Gets all the bus lines connected with the given stop
         url = "https://api.um.warszawa.pl/api/action/dbtimetable_get"
-        # TODO check if this arguments are not None before assigning them
         params = dict(id="88cd555f-6f31-43ca-9de4-66c479ad5942",
                       busstopId=busstopId, busstopNr=busstopNr,
                       apikey=APIKEY
@@ -30,14 +29,16 @@ def timetables_request(action: str, busstopId: str = None, busstopNr: str = None
                       busstopId=busstopId, busstopNr=busstopNr,
                       line=line, apikey=APIKEY
                       )
-    r = requests.get(url, params=params, timeout=timeout).json()
 
+    r = requests.get(url, params=params, timeout=timeout).json()
     return r["result"]
 
 
-def timetables_collect_all(dir_to_save: str, apikey: str = APIKEY, verbose: bool = False,
+def timetables_collect_all(dir_to_save: str, verbose: bool = False,
                            resume_from_row: int = 0, repeat_rows_file: Union[None, str] = None):
-    """ stops() -> lines_wrt_stop -> timetable_wrt_line_and_stop"""
+    """ stops() -> lines_wrt_stop -> timetable_wrt_line_and_stop
+    Jako repeat_rows_file podaj errors_log.txt
+    """
 
     if repeat_rows_file is not None or resume_from_row > 0:
         f_path = Path.cwd().joinpath(dir_to_save, "stops_coord.json")
@@ -56,13 +57,7 @@ def timetables_collect_all(dir_to_save: str, apikey: str = APIKEY, verbose: bool
             json.dump(stops_coord, f)
         print("Bus stops coordinates saved to a file.")
 
-    # if repeat_rows_file is not None:
-    #     with repeat_rows_file.open("r") as f:
-    #         repeat_rows = f
-    # else:
-    #     repeat_rows = []
-
-    # For now I assume that rows are loaded from error_log
+    # For now I assume that rows are loaded from errors_log
     repeat_rows = []
     if repeat_rows_file is not None:
         with open(repeat_rows_file, "r") as f:
@@ -99,23 +94,26 @@ def timetables_collect_all(dir_to_save: str, apikey: str = APIKEY, verbose: bool
                 try:
                     timetable = timetables_request(action="timetable", busstopId=busstopId,
                                                    busstopNr=busstopNr, line=line)
+
+                    # Save timetable to a file
+                    f_path = Path.cwd().joinpath(dir_to_save, f"{line}")
+                    Path(f_path).mkdir(parents=True, exist_ok=True)
+                    f_name = Path.cwd().joinpath(f_path, f"{busstopId}_{busstopNr}.json")
+                    with f_name.open("w") as f:
+                        json.dump(timetable, f)
+
+                    if verbose:
+                        print(f"{f_name} is saved.")
+
                 except requests.exceptions.RequestException as e:
+                    # Error during requesting the timetable
                     print(f"{e} occurred. I skip the row {row_count} {busstopId} {busstopNr} {line}")
                     with errors_log_file_name.open("a") as errors_file:
                         errors_file.write(f"{row_count} {e}\n")
                     errors_count += 1
 
-                f_path = Path.cwd().joinpath(dir_to_save, f"{line}")
-                Path(f_path).mkdir(parents=True, exist_ok=True)
-                f_name = Path.cwd().joinpath(f_path, f"{busstopId}_{busstopNr}.json")
-                with f_name.open("w") as f:
-                    json.dump(timetable, f)
-
-                if verbose:
-                    # TODO change this to actual file name
-                    print(f"{busstopId} {busstopNr} line {line} is saved.")
-
-            if ((row_count + 1) % 500) == 0:
+            # If verbose is False, inform the user about the progress each 500 processed rows
+            if not verbose and ((row_count + 1) % 500) == 0:
                 print(f"Processed {row_count + 1} rows.")
 
     if errors_count > 0:
@@ -132,7 +130,7 @@ if __name__ == "__main__":
     parser.add_argument("--repeat_rows_file", "-r", type=str, default=None)
     parser.add_argument("--resume_from_row", "-r_row", type=int, default=0)
 
-    parser.add_argument("--action", "-a", type=str, help="")
+    parser.add_argument("--action", "-a", type=str, default = None, help="")
     parser.add_argument("--busstopId", "-Id", type=int)
     parser.add_argument("--busstopNr", "-Nr", type=str)
     parser.add_argument("--line", type=int)
@@ -150,10 +148,12 @@ if __name__ == "__main__":
         else:
             sys.exit("Closing the program")
 
-    # tmp = timetables_request(action=args.action, busstopId=args.busstopId,
-    #                busstopNr=args.busstopNr, line=args.line)
-    # print(tmp)
-    # # IDEA: when velocity is bigger than 50 km/h check the closest bus stop from timetables
+    if args.action is not None:
+        tmp = timetables_request(action=args.action, busstopId=args.busstopId,
+                                 busstopNr=args.busstopNr, line=args.line)
+        print(tmp)
 
-    timetables_collect_all(dir_to_save=args.dir_to_save, verbose=args.verbose, repeat_rows_file=args.repeat_rows_file,
-                           resume_from_row=args.resume_from_row)
+    # IDEA: when velocity is bigger than 50 km/h check the closest bus stop from timetables
+    else:
+        timetables_collect_all(dir_to_save=args.dir_to_save, verbose=args.verbose, repeat_rows_file=args.repeat_rows_file,
+                               resume_from_row=args.resume_from_row)
