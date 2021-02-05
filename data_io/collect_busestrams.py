@@ -112,7 +112,7 @@ if __name__ == "__main__":
         Path(args.dir_to_save).mkdir(parents=True, exist_ok=False)
     except FileExistsError:
         print("This directory already exist. Do you want to proceed (you risk overwriting some files)?")
-        user_ans = input("y : n")
+        user_ans = input("y : n ")
         if user_ans == "y":
             Path(args.dir_to_save).mkdir(parents=True, exist_ok=True)
         else:

@@ -6,11 +6,6 @@ from typing import Union
 APIKEY = "96bc1c08-5f6e-411e-a69a-bdbff719bc7e"
 
 
-def busestrams(line: int, brigade: int, type: str = "bus", apikey: str = APIKEY, step: int = 1.0, how_long: int = 60):
-    url = ""
-    resource_id = ""
-
-
 def timetables_request(action: str, busstopId: str = None, busstopNr: str = None, line: int = None,
                        apikey: str = APIKEY, timeout: float = 1.0):
     if action == "stops_coord":
@@ -72,7 +67,7 @@ def timetables_collect_all(dir_to_save: str, apikey: str = APIKEY, verbose: bool
     if repeat_rows_file is not None:
         with open(repeat_rows_file, "r") as f:
             for line in f:
-                repeat_rows.append(line.split(" ")[0])
+                repeat_rows.append(int(line.split(" ")[0]))
 
     errors_log_file_name = Path.cwd().joinpath(dir_to_save, "errors_log.txt")
     errors_count = 0

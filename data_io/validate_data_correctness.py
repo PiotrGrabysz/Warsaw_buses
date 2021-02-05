@@ -28,10 +28,10 @@ def is_time_monotonically_increasing(dir_to_data: str):
                 errors_f.write(f"{bus_file}: {np.sum(time_diffs <= 0)} non-increasing rows in lines {np.where(time_diffs <= 0)}\n")
 
     if errors_counter == 0:
-        print(f"is_time_monotonically_increasing: True")
+        print(f"Everything is fine! Subsequent measurements are not time monotonous.")
     else:
-        print(f"is_time_monotonically_increasing: False. I've found {errors_counter} incorrect files which "
-              f"is {errors_counter/all_files_counter} of total number of files. See {errors_log_file} for details.")
+        print(f"Subsequent measurements are not time monotonous!. I've found {errors_counter} incorrect files which "
+              f"is {errors_counter/all_files_counter} of the total number of files. See {errors_log_file} for details.")
 
 
 def filter_data_from_non_monotonically_increasing_time(dir_to_data: str):
@@ -71,7 +71,8 @@ def one_brigade_one_vehicle_number(dir_to_data: str):
     for bus_file in files_list:
         print(bus_file)
         break
-    
+
+
 if __name__ == "__main__":
     import argparse
     
@@ -83,5 +84,9 @@ if __name__ == "__main__":
 
     # TODO let user chose what to do with argparse
     is_time_monotonically_increasing(dir_to_data=args.dir_to_data)
-    # one_brigade_one_vehicle_number(dir_to_data=args.dir_to_data)
-    # filter_data_from_non_monotonically_increasing_time(dir_to_data=args.dir_to_data)
+    ans = input("Do you want to filter out the files where data is not monotonous? y : n ")
+    if ans == "y":
+        print("Starts filtering the data...")
+        filter_data_from_non_monotonically_increasing_time(dir_to_data=args.dir_to_data)
+        print(f"Finished! The filtered data are saved in {args.dir_to_data}_filtered")
+    one_brigade_one_vehicle_number(dir_to_data=args.dir_to_data)
