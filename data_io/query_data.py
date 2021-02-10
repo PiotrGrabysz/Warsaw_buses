@@ -1,7 +1,10 @@
-import os
 from pathlib import Path
 import json
 import pandas as pd
+
+import math
+import matplotlib.pyplot as plt
+import statistics
 
 
 def load_timetable(f_path: str):
@@ -65,6 +68,37 @@ def bus_stop_id_to_name(stop_id: str, stops_coord_path: str):
         print(f"{stop_id} bus stop name is {stop_name}.")
 
 
+def timestamps_diffs_statistics(dir_to_busestrams: str) -> None:
+
+    timestamps_diffs_list = []
+    # dir_to_busestrams has structure: dir_to_busestrams / "line/brigade/vehicle.txt"
+    p = Path(dir_to_busestrams).glob('*/*/*')
+    # files_list is a list of all the files in the directory dir_to_busestrams
+    files_list = [x for x in p if x.is_file()]
+    for bus_file in files_list:
+        bus_data = pd.read_csv(bus_file, names=["Lat", "Lon", "Time"])
+
+        # Calculating time differences:
+        time_column = pd.to_datetime(bus_data["Time"]).dt.strftime('%H:%M:%S')
+        time_column = pd.to_timedelta(time_column).dt.total_seconds()
+        # I convert it into numpy.array to make arithmetic operations without the loop
+        time_column = time_column.to_numpy()
+        time_diffs = (time_column[1:] - time_column[:-1])
+
+        if time_diffs[time_diffs > 600.].sum() > 0:
+            print(f"I've found time difference greater than one minute in the file {bus_file}.")
+
+        timestamps_diffs_list += time_diffs.tolist()
+
+    print(f"Mean difference between timestamps is {statistics.mean(timestamps_diffs_list):.2f} seconds.")
+    print(f"Standard deviation of differences between timestamps is {statistics.stdev(timestamps_diffs_list):.2f} "
+          f"seconds.")
+    print(f"Median of differences between timestamps is {statistics.median(timestamps_diffs_list):.2f} seconds.")
+    print(f"Maximum difference is {max(timestamps_diffs_list):.2f} seconds.")
+    # plt.hist(timestamps_diffs_list, bins=50)
+    # plt.show()
+
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
@@ -78,5 +112,7 @@ if __name__ == "__main__":
     # stops_coord_path = r"..\data\timetables\stops_coord.json"
     # bus_stop_id_to_name("R-13", stops_coord_path)
     
-    df = timetable(line=2, bus_stop_id=1122, bus_stop_nr="03", dir_to_timetables="..\\data\\timetables")
-    print(df)
+    # df = timetable(line=2, bus_stop_id=1122, bus_stop_nr="03", dir_to_timetables="..\\data\\timetables")
+    # print(df)
+
+    timestamps_diffs_statistics(args.f_path)

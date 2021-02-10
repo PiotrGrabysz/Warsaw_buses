@@ -6,8 +6,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
 
+
 def dist(lat1, lon1, lat2, lon2):
-    """ Returns a distance between to locations using formula described here:
+    """ Returns a distance between two locations using formula described here:
     https://andrew.hedges.name/experiments/haversine/ """
 
     # Convert coordinates in degrees into radians
@@ -29,9 +30,13 @@ def dist(lat1, lon1, lat2, lon2):
     return d
 
 
-def calc_speed(dir_to_busestrams: str):
-    """ For a given directory with busestrams data it creates NEW directory where a column describing speed is added to
-    each data file."""
+def calc_speed(dir_to_busestrams: str) -> None:
+    """ For a given directory with busestrams data it creates NEW directory where in each file a column describing the
+    speed is added.
+
+    :param dir_to_busestrams: the directory where the busestrams data are stored in
+    :return: None
+    """
 
     # dir_to_busestrams has structure: dir_to_busestrams / "line/brigade/vehicle.txt"
     p = Path(dir_to_busestrams).glob('*/*/*')
@@ -90,9 +95,10 @@ def speed_statistics(dir_to_data: str, speed: float = 50., outlier_speed: float 
     Print percent of times when the given speed is exceeded and maximal and minimal speed. It also plots the
     histogram of all the measured speeds.
 
-    :param dir_to_data: directory to the folder containing busestrams data. By default it should be a folder with the
-    name ending with "with_speed".
-    :param speed: percent of times when exceeding speed is printed
+    :param dir_to_data: directory to the folder containing busestrams with speed data (so the data created by the
+    calc_speed() function). By default it should be a folder with the name ending with "with_speed".
+
+    :param speed: percent of times when exceeding the specified speed is printed
     :param outlier_speed: if specified, speeds greater than outlier_speed are not taken into consideration.
     :return: None
     """
@@ -104,7 +110,7 @@ def speed_statistics(dir_to_data: str, speed: float = 50., outlier_speed: float 
     # impossible_speed = 120.  # THIS IS FOR TRACKING WEIRD OUTLIERS!
 
     # Very long list with all the measured speed. Used for plotting a histogram
-    # TODO change in to a dict with specified intervals:
+    # TODO change it to a dict with specified intervals:
     speed_list = []
 
     # dir_to_data has structure: dir_to_data / "line/brigade/vehicle.txt"
@@ -139,7 +145,7 @@ def speed_statistics(dir_to_data: str, speed: float = 50., outlier_speed: float 
 
 
 def exceeding_the_speed_location(dir_to_data: str, speed: float, outlier_speed: float = None):
-
+    # TODO decide if this is worth keeping
     exceeding_location_list = []
     p = Path(dir_to_data).glob('*/*/*')
     # files_list is a list of all files in the directory dir_to_busestrams
@@ -167,16 +173,22 @@ def exceeding_the_speed_location(dir_to_data: str, speed: float, outlier_speed: 
 def exceeding_the_speed_location2(dir_to_data: str, speed: float, round_to: int = 2,
                                   outlier_speed: float = None) -> dict:
     """
+    Return a dictionary with position (latitude and longitude) as key, and the number of times where the speed was
+    exceeded in this location as value. Latitude and longitude are rounded according to round_to parameter, to help to
+    group the data
 
-    :param dir_to_data:
-    :param speed:
-    :param round_to:
-    :param outlier_speed:
-    :return:
+    :param dir_to_data: The directory to busestrams dat
+    :param speed: The program looks for the times for the speed specified here is exceeded
+    :param round_to: The notion of exceeding location is rounded up to round_to decimal places
+    :param outlier_speed: If specified, speeds greater than outlier_speed are not taken into the consideration
+    :return: dictionary
     """
+
     exceeding_locations_dict = dict()
+
+    # dir_to_data has structure: dir_to_data / "line/brigade/vehicle.txt"
     p = Path(dir_to_data).glob('*/*/*')
-    # files_list is a list of all files in the directory dir_to_busestrams
+    # files_list is a list of all files in the directory dir_to_data
     files_list = [x for x in p if x.is_file()]
     for bus_file in files_list:
         bus_data = pd.read_csv(bus_file)
@@ -185,7 +197,7 @@ def exceeding_the_speed_location2(dir_to_data: str, speed: float, round_to: int 
             # Filter out all rows containing speed greater than the outlier_speed
             bus_data = bus_data[bus_data["Speed"] < outlier_speed]
 
-        for _, row in bus_data[bus_data["Speed"]>speed].iterrows(): # TODO what happens when this is emtpy?
+        for _, row in bus_data[bus_data["Speed"]>speed].iterrows():  # TODO what happens when this is emtpy?
             location = (round(row["Lat"], round_to), round(row["Lon"], round_to))
             if location in exceeding_locations_dict:
                 exceeding_locations_dict[location] += 1
@@ -199,11 +211,15 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dir", "-d", type=str)
-    parser.add_argument("--calc_speed", action="store_true")
-    parser.add_argument("--statistics", action="store_true")
-    parser.add_argument("--locations", action="store_true")
-    parser.add_argument("--speed", "-s", type=float, default=50.)
+    parser.add_argument("--dir", "-d", type=str, help="directory with busestrams data.")
+    parser.add_argument("--calc_speed", action="store_true", help="calc_speed() is run if this flag is active")
+    parser.add_argument("--statistics", action="store_true", help="speed_statistics() is run if this flag is active")
+    parser.add_argument("--locations", action="store_true", help="exceeding_the_speed_location() is run if this flag"
+                                                                 " is active")
+    parser.add_argument("--speed", "-s", type=float, default=50., help="The program looks for the times for the speed "
+                                                                       "specified here is exceeded. It is used in "
+                                                                       "speed_statistics() and "
+                                                                       "exceeding_the_speed_location().")
     args = parser.parse_args()
 
     if args.calc_speed:
@@ -230,3 +246,7 @@ if __name__ == "__main__":
             print(f"{val} which is {100*(val/all_locations):.2f}%")
             if cum_sum/all_locations > 0.9:
                 break
+
+        results_path = Path("./speed_exceeded_pickle")
+        with results_path.open("wb") as f:
+            pickle.dump(exceeding_locations_dict, f)
