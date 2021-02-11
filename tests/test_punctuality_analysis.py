@@ -4,7 +4,6 @@ from pathlib import Path
 import pandas as pd
 
 from process_data.punctuality_analysis import dist_bus_from_stop
-# import ..\process_data\punctuality_analysis\dist_bus_from_stopfrom process_data.punctuality_analysis import dist_bus_from_stop
 
 
 DIR_TIMETABLES = Path("./test_punctuality_analysis_data/timetables")
@@ -36,16 +35,16 @@ def test_punctuality(bus_file_name, dir_correct_results, dir_timetables=DIR_TIME
 
 
 if __name__ == "__main__":
-
-    dir_busestrams = "./test_punctuality_analysis_data/busestrams_delay_2"
-    dir_timetables = DIR_TIMETABLES
-    dir_stops_coord = DIR_STOPS_COORD
-    line = "128"
-    brigade = "1"
-
-    df = dist_bus_from_stop(dir_busestrams=dir_busestrams,
-                            dir_timetables=dir_timetables,
-                            dir_stops_coord=dir_stops_coord,
-                            time_weight=0.001)
-
-    df["delay"].to_csv("./test_punctuality_analysis_data/results.txt", index=False)
+    pass
+    # dir_busestrams = "./test_punctuality_analysis_data/busestrams_delay_2"
+    # dir_timetables = DIR_TIMETABLES
+    # dir_stops_coord = DIR_STOPS_COORD
+    # line = "128"
+    # brigade = "1"
+    #
+    # df = dist_bus_from_stop(dir_busestrams=dir_busestrams,
+    #                         dir_timetables=dir_timetables,
+    #                         dir_stops_coord=dir_stops_coord,
+    #                         time_weight=0.001)
+    #
+    # df["delay"].to_csv("./test_punctuality_analysis_data/results.txt", index=False)
