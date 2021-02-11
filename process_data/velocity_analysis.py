@@ -80,7 +80,7 @@ def calc_speed(dir_to_busestrams: str) -> None:
         # The new directory has the same beginning, but the name of a folder with all the buses is suffixed with
         # "_with_speed"
         new_file_path = Path("/".join(file_path_split[:-4])) / (file_path_split[-4] + "_with_speed")
-        # file_path_split[-2] is the line number of the bus
+        # file_path_split[-3] is the line number of the bus, file_path_split[-3] is brigade number
         new_file_path = new_file_path / file_path_split[-3] / file_path_split[-2]
         # Create new directory in case it doesn't exist yet
         Path(new_file_path).mkdir(parents=True, exist_ok=True)
