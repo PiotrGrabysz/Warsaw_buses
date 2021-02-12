@@ -1,12 +1,12 @@
 """This is punctuality analysis"""
+
 from pathlib import Path
 import json
 import datetime
 import pandas as pd
 import numpy as np
 
-# from process_data.speed_analysis import dist
-from .speed_analysis import dist
+from speed_analysis import dist
 
 
 def get_bus_schedule(line: str, brigade: str, dir_timetables: str, dir_stops_coord: str,
