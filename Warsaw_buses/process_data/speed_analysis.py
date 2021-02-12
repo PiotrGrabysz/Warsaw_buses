@@ -147,11 +147,12 @@ def speed_statistics(dir_to_data: str, speed: float = 50., outlier_speed: float 
 
         speed_list += bus_data["Speed"].tolist()
 
-    # Print some statistics:
+    print("\nSpeed statistics:")
+    print("-" * 20)
     print(f"Maximal measured speed: {max(speed_list)}\nMinimal measured speed: {min(speed_list)}")
     print(f"Percent of times when any bus exceeds {speed} km/h vs all measurements is "
           f"{100 * exceeding_speed / total_number_of_records :.2f}%.")
-
+    print("-" * 20)
     # Show the histogram:
     speed_numpy = np.array(speed_list)
     plt.hist(speed_numpy, bins=30, density=True)

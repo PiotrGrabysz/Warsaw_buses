@@ -6,7 +6,7 @@ import datetime
 import pandas as pd
 import numpy as np
 
-from speed_analysis import dist
+from .speed_analysis import dist
 
 
 def get_bus_schedule(line: str, brigade: str, dir_timetables: str, dir_stops_coord: str,
@@ -276,13 +276,15 @@ def delays_statistics(dir_busestrams: str, dir_timetables: str, dir_stops_coord:
             more_than_five += counter
 
     mean = mean/total_sum
+    print("\nDelays statistics:")
+    print("-" * 20)
     print(f"Mean delay is: {mean:.0f} seconds.")
     print(f"Percent of times when the bus is on time or its delay is at most one minute: "
           f"{100*less_or_eq_than_one/total_sum:.0f}%")
     print(f"Percent of delays longer than one minute: {100*more_than_one/total_sum:.0f}%.")
     print(f"Percent of delays longer than five minute: {100*more_than_five/total_sum:.0f}%.")
     print(f"The longest found delay is: {max(list(delays_dict.keys()))} seconds.")
-
+    print("-" * 20)
 
 if __name__ == "__main__":
     import argparse
