@@ -10,15 +10,18 @@ def main():
 
     # Choose what should be analysed:
     parser.add_argument("--punctuality", action="store_true",
-                        help=" ")
+                        help="Run punctuality_analysis()")
     parser.add_argument("--calc_speed", action="store_true",
-                        help="calc_speed() is run if this flag is active."
+                        help="Run calc_speed(). For the given directory with busestrams data it creates NEW directory "
+                             "where in each file a column describing the speed is added. This new directory's name is "
+                             "dir_to_busestrams suffixed with '_with_speed'."
                         )
     parser.add_argument("--speed_statistics", action="store_true",
-                        help="speed_statistics() is run if this flag is active."
+                        help="Run speed_statistics(). Print percent of times when the given speed is exceeded and "
+                             "maximal and minimal speed."
                         )
     parser.add_argument("--speed_locations", action="store_true",
-                        help="exceeding_the_speed_location() is run if this flag is active."
+                        help="Run exceeding_the_speed_location()."
                         )
 
     # Directory with busestrams data
@@ -49,9 +52,10 @@ def main():
         print("\nStarts calculating delays...")
         print(f"It might take a while...")
 
-        punctuality_analysis.delays_statistics(dir_busestrams=args.dir_to_busestrams,
-                                               dir_timetables=args.dir_to_timetables,
-                                               dir_stops_coord=args.dir_to_stops_coord)
+        delays_dict = punctuality_analysis.calc_delays(dir_busestrams=args.dir_to_busestrams,
+                                                       dir_timetables=args.dir_to_timetables,
+                                                       dir_stops_coord=args.dir_to_stops_coord)
+        punctuality_analysis.delays_statistics(delays_dict=delays_dict)
 
     if args.calc_speed:
         print("\nStarts calculating speed...")
@@ -67,10 +71,10 @@ def main():
 
     if args.speed_locations:
         print(f"Looking for locations were {args.exceeded_speed} km/h is exceeded...")
-        # exceeding_locations_dict = speed_analysis.exceeding_the_speed_locations(dir_to_data=dir_to_busestrams_with_speed,
-        #                                                                         speed=args.speed,
-        #                                                                         round_to=2,
-        #                                                                         outlier_speed=120.)
+        exceeding_locations_dict = speed_analysis.exceeding_the_speed_locations(dir_to_data=dir_to_busestrams_with_speed,
+                                                                                speed=args.speed,
+                                                                                round_to=2,
+                                                                                outlier_speed=120.)
 
         # Save exceeding_locations_dict to a file for the sake of future usage (like on the map)
         # results_path = Path("./speed_exceeded_pickle")

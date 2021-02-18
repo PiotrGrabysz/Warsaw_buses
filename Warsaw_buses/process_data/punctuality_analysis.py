@@ -6,7 +6,8 @@ import datetime
 import pandas as pd
 import numpy as np
 
-from .speed_analysis import dist
+# from .speed_analysis import dist
+from .utils import dist, bus_data_iterator
 
 
 def get_bus_schedule(line: str, brigade: str, dir_timetables: str, dir_stops_coord: str,
@@ -188,7 +189,13 @@ def dist_bus_from_stop(bus_file_name: str, dir_timetables: str, dir_stops_coord:
 
 def calc_delays(dir_busestrams: str, dir_timetables: str, dir_stops_coord: str,
                 max_speed_around_the_stop: float = 40., time_weight: float = 0.001) -> dict:
-    """Calculate delays for every bus in the dir_busestrams directory. See delays_statics() description for details.
+    """Calculate delays for every bus in the dir_busestrams directory. To calculate delays I need to calculate
+    distance between each stop and the closest position of the bus. But by close I mean close in space AND time. Why?
+    Suppose that a bus gets to the final station, waits and then goes in the other direction. Then it might pass a bus
+    stop twice, but clearly I am interested only in one such passing. Put it differently, while analysing punctuality I
+    want to know when the bus is near the stop but only if this bus is going in the right direction. So I take the
+    distance between the stop and the bus and add some 'penalty' which is the difference between bus timestamp and the
+    time of arrival in the schedule.
 
     :param dir_busestrams: The directory where the files with bus data are stored
     :param dir_timetables: The directory where the files with timetables are stored
@@ -227,31 +234,12 @@ def calc_delays(dir_busestrams: str, dir_timetables: str, dir_stops_coord: str,
     return delays_dict
 
 
-def delays_statistics(dir_busestrams: str, dir_timetables: str, dir_stops_coord: str,
-                      max_speed_around_the_stop: float = 40., time_weight: float = 0.001) -> None:
-    """Print some statistics of the bus delays calculated with calc_delays(). To calculate delays I need to calculate
-    distance between each stop and the closest position of the bus. But by close I mean close in space AND time. Why?
-    Suppose that a bus gets to the final station, waits and then goes in the other direction. Then it might pass a bus
-    stop twice, but clearly I am interested only in one such passing. Put it differently, while analysing punctuality I
-    want to know when the bus is near the stop but only if this bus is going in the right direction. So I take the
-    distance between the stop and the bus and add some 'penalty' which is the difference between bus timestamp and the
-    time of arrival in the schedule.
+def delays_statistics(delays_dict: dict) -> None:
+    """Print some statistics of the bus delays calculated with calc_delays().
 
-    :param dir_busestrams: The directory where the files with bus data are stored.
-    :param dir_timetables: The directory where the files with timetables are stored.
-    :param dir_stops_coord: The name of the file with bus stops coordinates.
-    :param max_speed_around_the_stop: It might happen (in fact - it happens almost every time) that the bus updates its
-    position near the stop but not exactly at the stop. To estimate the time needed to drive exactly to the stop I
-    assume the bus drives with the speed max_speed_around_the_stop.
-    :param time_weight: How much the time difference is import in calculating spacetime distance.
+    :param delays_dict: Dictionary returned by calc_delays().
     :return: None.
     """
-
-    delays_dict = calc_delays(dir_busestrams=dir_busestrams,
-                              dir_timetables=dir_timetables,
-                              dir_stops_coord=dir_stops_coord,
-                              max_speed_around_the_stop=max_speed_around_the_stop,
-                              time_weight=time_weight)
 
     # Number of all observations
     total_sum = 0
@@ -286,6 +274,7 @@ def delays_statistics(dir_busestrams: str, dir_timetables: str, dir_stops_coord:
     print(f"The longest found delay is: {max(list(delays_dict.keys()))} seconds.")
     print("-" * 20)
 
+
 if __name__ == "__main__":
     import argparse
 
@@ -298,5 +287,11 @@ if __name__ == "__main__":
                         help="The name of the file with bus stops coordinates.")
     args = parser.parse_args()
 
-    delays_statistics(dir_busestrams=args.dir_to_busestrams, dir_timetables=args.dir_to_timetables,
-                      dir_stops_coord=args.dir_to_stops_coord)
+    delays_dict = calc_delays(dir_busestrams=args.dir_busestrams,
+                              dir_timetables=args.dir_timetables,
+                              dir_stops_coord=args.dir_stops_coord,
+                              max_speed_around_the_stop=40.,
+                              time_weight=0.001
+                              )
+
+    delays_statistics(delays_dict)
