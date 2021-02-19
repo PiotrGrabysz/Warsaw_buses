@@ -1,2 +1,37 @@
-)Ú”,Š	æz{EŠv¥jË"‚yžžÙšuçè®Ø^NŠ%±+©¦ŠíŠxjÖ€©r²+"œü­†‰Ü•«,zÇÚ–[™ë-zºÛM´N¬¦º#yË\¢{"²Û(}§ÞÂ–«¶Ç(–WœµÖ­h‹b±ú+vŒ'–†ŠxjÖš×(žÖ¢žÇîËb¢{>r‰eyË[ºÇ¬¶¶¦±ú+vŒ'–†Šx z‰hq©bÍ«b¢wZµªnë²Ší­©¬~ŠàŠ÷§¥êâ¡Ú¶)žùÊ%•ç-¶)žµ¦åzÇè­Ú0žZv)à¶°†‰^¶)žµ¦åyú+¶©j»bréZ­Ö²Â§¶¬~éÜ¶*'ŠÊîžšèqë,u«Z"{aŠÉ¨vé^¢wœjyš‘æ§j\¬ŠÊúÊ^yÜ!‰Èm…æî±ë £­„7¬r¸›zØ^ž‹b¢zjZjØ¨žëv)í…ë(–ëb¢›ºÇ¬¦éÜ¶æ¥ŠÜ“¡Æ¥réZµëay×¥k+¢·šr-¢’Šwm…æî²š,ŠØ¨Éh±ë-¶‹azËh¤­o'%¢Çˆ™æ§rZ,z)éiÇ€4;b™å¡É+©¦‹¶­i»¬ël¶‹ayø§j[-jØ¨Ÿ¢¶Æ§vØ^ž
-²)í…ê-…êÝŠ·œ¶*'"{.rzv«Šˆ­š(!¶–¬±¦î²Ëh¦Ü"qæîµÉ^j¹r!©¢ž×«zË^v‰åÊ)èë.rZ²È§€û­Š×b}÷«z{eËb•æ§j\¬Šx)ºw-¹©b·"0j{m¢IèÃ^žØ^në"²wš®Ø^²Ú)nëhž\¢~Øb±»¬ŠÈ(Šx"žØ^®(!µØ«yËb¢t¨"Ö¤zØ^v+-jwmëpyéí…ë-¢–§vØ^nëÖvÊ&z—§j[rÂœ†+-…çb}÷«zwmëpyéÛºËb™ë-jjZÛazÇ!yÛ¥zËb™êjºâ½©HžËZ•«b¢tnž)í…ë^®h§jZb¦)ìµ©e‚+~†Ûi³ÿàŠÙZnìvêeþ˜+i¼¬Ï÷â©Z²È žg§µ&¦¦W®±¨Nˆµö¦ŠXš¯­†Ø^š‡n•ç(šf§vÆ§vÚ+y§l¢g¨~l­†‹ †Û×(šg§¶Æ›¢ë]yÈ¬Š‰ìµ©ž)í†+)®ˆÞrÚey«­æ¶¾r‰eyË]jÖ¬jjezëè©Êvþ®éÝjÖš©r²+,jjezëè©ÊvØ¢ç©l¢»§Š{az×«š)Ú•Ê%•ç-u«Z…éijwkºwZµ¦§j\¬ŠÈ^–
+[!image](C:\Users\PiotrGrabysz\Documents\PythonScripts\NYPD\final-assignment\sample_map.png)
+
+# Final Assignment 
+
+Final assignment made for the Tools Supporting Data Analysis in Python classes, fall semester of 2020.
+
+This project consists of a few parts:
+
+* collect_data. It is for downloading data and contains functions
+    + collect_busestrams() for downloading geolocalization data of buses (or trams) for given period of time.
+    + collect_timetables for downloading the whole timetable (for the particular day when this function is run)
+
+
+* process_data. In this module one can make analysis of
+    + speed which the buses go with. Describe the notion of a location used in the solution.
+    + buses punctuality. To calculate the delays for each stop I find the bus position closest to the stop. But by close I mean close in pace AND time. Why? Suppose that a bus gets to the final station, waits and then goes in the other direction. In such scenario it might pass a bus stop twice, but clearly I am interested only in one such passing. Put it differently, while analysing punctuality I want to know when the bus is near the stop but only if this bus is going in the right direction. So I take the distance between the stop and the bus and add some 'penalty' which is the difference between bus timestamp and the schedule's time of arrival.
+
+### Instalation
+
+Run in the terminal
+
+>pip install git+https://gitlab.uw.edu.pl/p.grabysz/final-assignment
+
+### Sample usage
+
+To get familiar with the module commands and to read some of my thoughts and comments about decisions taken in this project, please read the _collect_data sample usage.ipynb and _run_data_analysis sample usage.ipynb. You can also run in the terminal:
+
+> collect_data --help
+
+and 
+
+> run_data_analysis --help
+
+
+    
+
+
