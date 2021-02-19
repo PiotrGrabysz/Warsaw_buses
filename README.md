@@ -1,5 +1,7 @@
 ![](sample_map.png)
 
+![sample_map](/uploads/d53ee890a762aa5905f2ae84f6733bf4/sample_map.png)
+
 # Final Assignment 
 
 Final assignment made for the Tools Supporting Data Analysis in Python classes, fall semester of 2020.
