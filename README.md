@@ -19,14 +19,14 @@ This project consists of a few parts:
 
 Run in the terminal
 
-`pip install git+https://gitlab.uw.edu.pl/p.grabysz/final-assignment`
+> `pip install git+https://gitlab.uw.edu.pl/p.grabysz/final-assignment`
 
 ### Sample usage
 
 To get familiar with the module commands and to read some of my thoughts and comments about decisions taken in this project, please read the _collect_data sample usage.ipynb and _run_data_analysis sample usage.ipynb. You can also run in the terminal:
 
-`collect_data --help`
+> `collect_data --help`
 
 and 
 
-`run_data_analysis --help`
+> `run_data_analysis --help`
