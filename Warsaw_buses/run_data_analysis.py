@@ -1,7 +1,10 @@
 import argparse
 from pathlib import Path
+import pickle
+import operator
+from collections import OrderedDict
 
-from Warsaw_buses.process_data import speed_analysis, punctuality_analysis
+from Warsaw_buses.process_data import speed_analysis, punctuality_analysis, utils
 
 
 def main():
@@ -38,8 +41,20 @@ def main():
 
     # Params for speed analysis:
     parser.add_argument("--exceeded_speed", "-s", type=float, default=50.,
-                        help="The program looks for the times for the speed specified here is exceeded. It is used in "
-                             "speed_statistics() and exceeding_the_speed_location()."
+                        help="The program looks for the times when the speed specified here is exceeded.  It is set to "
+                             "50 km/h by default.It is used in speed_statistics() and exceeding_the_speed_location()."
+                        )
+    parser.add_argument("--outlier_speed", type=float, default=120.,
+                        help="If specified, speeds greater than outlier_speed are not taken into consideration. "
+                             "It is set to 120 km/h by default."
+                        )
+    parser.add_argument("--round_to", type=int, default=2,
+                        help="The notion of an exceeding location is rounded up to round_to decimal places. It is set"
+                             " to 2 by default."
+                        )
+    parser.add_argument("--radius", type=float, default=None,
+                        help="Locations further than the radius from the Warsaw centre are not considered. Defualt "
+                             "to None"
                         )
 
     args = parser.parse_args()
@@ -67,27 +82,47 @@ def main():
         print("\nStarts calculating statistics...")
         speed_analysis.speed_statistics(dir_to_data=dir_to_busestrams_with_speed,
                                         speed=args.exceeded_speed,
-                                        outlier_speed=120.)
+                                        outlier_speed=args.outlier_speed)
 
     if args.speed_locations:
-        print(f"Looking for locations were {args.exceeded_speed} km/h is exceeded...")
+        print(f"\nLooking for locations were {args.exceeded_speed} km/h is exceeded...")
+        print(f"You chose round_to as {args.round_to} so the map is divided into rectangles of the size "
+              f"{utils.divided_map_area(args.round_to)[0]:.3f} km height and "
+              f"{utils.divided_map_area(args.round_to)[1]:.3f} km width.")
         exceeding_locations_dict = speed_analysis.exceeding_the_speed_locations(dir_to_data=dir_to_busestrams_with_speed,
-                                                                                speed=args.speed,
-                                                                                round_to=2,
-                                                                                outlier_speed=120.)
+                                                                                speed=args.exceeded_speed,
+                                                                                round_to=args.round_to,
+                                                                                outlier_speed=args.outlier_speed)
 
-        # Save exceeding_locations_dict to a file for the sake of future usage (like on the map)
-        # results_path = Path("./speed_exceeded_pickle")
-        # with results_path.open("wb") as f:
-        #     pickle.dump(exceeding_locations_dict, f)
-        #
-        # # I want to find locations were the speed is exceeded significant amount of times
-        # thres = 0.9
-        # for loc, counts in exceeding_locations_dict.items():
-        #     exceeding_percent = counts[1] / counts[0]
-        #     if exceeding_percent > thres:
-        #         print(f"The speed was exceeded {100 * exceeding_percent:.0f}% of times around {loc}.")
+        n_of_all_measurements = 0
+        for loc, counts in exceeding_locations_dict.items():
+            counts.append(counts[1]/counts[0])
+            n_of_all_measurements += counts[0]
 
+        exceeding_locations_dict_sorted = OrderedDict(sorted(exceeding_locations_dict.items(),
+                                                             key=lambda t: t[1][2],
+                                                             reverse=True))
+
+        Warsaw_centre = [52.23213243754829, 21.0060709762026]
+        n = 0
+        print("\nFive locations with the biggest percent of buses exceeding the speed:")
+        print("lat    lon      exceeding %")
+        for (loc, counts) in exceeding_locations_dict_sorted.items():
+            if args.radius is not None:
+                if utils.dist(Warsaw_centre[0], Warsaw_centre[1], loc[0], loc[1]) < args.radius:
+                    print(f"{loc[0]}, {loc[1]}    {100 * counts[2]:.0f}% ")
+                    n += 1
+            else:
+                print(f"{loc[0]}, {loc[1]}    {100 * counts[2]:.0f}% ")
+                n += 1
+
+            if n >= 5:
+                break
+
+        # # Save exceeding_locations_dict to a file for the sake of future usage (like on the map)
+        results_path = Path("./speed_exceeded_pickle")
+        with results_path.open("wb") as f:
+            pickle.dump(exceeding_locations_dict, f)
 
 
 if __name__ == "__main__":

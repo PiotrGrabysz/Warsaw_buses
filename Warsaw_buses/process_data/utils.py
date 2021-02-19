@@ -41,3 +41,16 @@ def bus_data_iterator(dir_to_busestrams: str) -> list:
     # files_list is a list of all the files in the directory dir_to_busestrams
     bus_files_list = [x for x in paths_in_dir if x.is_file()]
     return bus_files_list
+
+
+def divided_map_area(round_to: int) -> [float, float]:
+
+    lat1 = 52.0
+    lon1 = 21.0
+    lat2 = 52.0 + 0.1**round_to
+    lon2 = 21.0 + 0.1**round_to
+
+    height = dist(lat1, lon1, lat2, lon1)
+    width = dist(lat1, lon1, lat1, lon2)
+
+    return height, width

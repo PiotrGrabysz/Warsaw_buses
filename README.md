@@ -1,4 +1,4 @@
-[!image](C:\Users\PiotrGrabysz\Documents\PythonScripts\NYPD\final-assignment\sample_map.png)
+![](sample_map.png)
 
 # Final Assignment 
 
