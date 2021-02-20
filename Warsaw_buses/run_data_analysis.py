@@ -60,8 +60,9 @@ def main():
     args = parser.parse_args()
 
     print(f"Using buses data from the directory {Path(args.dir_to_busestrams).absolute()}")
-    print(f"Using timetables data from the directory {Path(args.dir_to_timetables).absolute()}")
-    print(f"Using coordinates of the stops data from the directory {Path(args.dir_to_stops_coord).absolute()}")
+    if args.punctuality:
+        print(f"Using timetables data from the directory {Path(args.dir_to_timetables).absolute()}")
+        print(f"Using coordinates of the stops data from the directory {Path(args.dir_to_stops_coord).absolute()}")
 
     if args.punctuality:
         print("\nStarts calculating delays...")

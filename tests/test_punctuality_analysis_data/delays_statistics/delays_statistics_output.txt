@@ -1,0 +1,10 @@
+
+Delays statistics:
+--------------------
+Mean delay is: 1 minutes and 23 seconds.
+Percent of times when the bus is on time or its delay is at most one minute: 30%
+Percent of delays longer than one minute: 69%.
+Percent of delays longer than five minute: 65%.
+The longest found delay is: 7 minutes and 7 seconds.
+--------------------
+

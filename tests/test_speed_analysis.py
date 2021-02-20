@@ -51,6 +51,45 @@ def test_calc_speed(dir_to_busestrams: str, dir_correct_results: str, tmp_path):
         pd.testing.assert_frame_equal(bus_speed, bus_speed_correct)
 
 
+def test_calc_speed_FileNotFound(capsys):
+
+    dir_to_busestrams = "../data/not_existent_directory"
+    try:
+        speed_analysis.calc_speed(dir_to_busestrams=dir_to_busestrams)
+    except SystemExit:
+        pass
+    out, err = capsys.readouterr()
+    with open("./err.txt", "w") as er_file:
+        er_file.write(err)
+    assert out == "Error! This directory does not exist: "'../data/not_existent_directory'"\n"
+
+
+def test_speed_statistics_FileNotFound(capsys):
+
+    dir_to_busestrams = "../data/not_existent_directory"
+    try:
+        speed_analysis.calc_speed(dir_to_busestrams=dir_to_busestrams)
+    except SystemExit:
+        pass
+    out, err = capsys.readouterr()
+    with open("./err.txt", "w") as er_file:
+        er_file.write(err)
+    assert out == "Error! This directory does not exist: "'../data/not_existent_directory'"\n"
+
+
+def test_exceeding_the_speed_locations_FileNotFound(capsys):
+
+    dir_to_busestrams = "../data/not_existent_directory"
+    try:
+        speed_analysis.calc_speed(dir_to_busestrams=dir_to_busestrams)
+    except SystemExit:
+        pass
+    out, err = capsys.readouterr()
+    with open("./err.txt", "w") as er_file:
+        er_file.write(err)
+    assert out == "Error! This directory does not exist: "'../data/not_existent_directory'"\n"
+
+
 def test_statistics_output(capsys):
     """Tests if info printed by speed_statistics() is correct"""
 

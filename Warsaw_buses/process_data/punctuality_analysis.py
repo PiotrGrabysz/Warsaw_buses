@@ -1,13 +1,13 @@
 """This is punctuality analysis"""
 
 from pathlib import Path
+import sys
 import json
 import datetime
 import pandas as pd
 import numpy as np
 
-# from .speed_analysis import dist
-from .utils import dist, bus_data_iterator
+from .utils import dist, bus_data_iterator, timetables_iterator
 
 
 def get_bus_schedule(line: str, brigade: str, dir_timetables: str, dir_stops_coord: str,
@@ -32,18 +32,17 @@ def get_bus_schedule(line: str, brigade: str, dir_timetables: str, dir_stops_coo
     """
 
     # load stops coordinates
-    with open(dir_stops_coord, "r") as f:
-        stops_coord = json.load(f)
-
-    # the files I am looking for have the path structure: dir_timetables / line / busstopId_busstopNr.json
-    p = Path(dir_timetables).glob(f"{line}/*")
-    # files_list is a list of all the timetables for the given line at the given stop
-    files_list = [x for x in p if x.is_file()]
+    try:
+        with open(dir_stops_coord, "r") as f:
+            stops_coord = json.load(f)
+    except FileNotFoundError as err:
+        print(err)
+        sys.exit()
 
     # create an empty pd.DataFrame(), to which rows are added in the following loop
     bus_schedule = pd.DataFrame()
 
-    for timetable_file in files_list:
+    for timetable_file in timetables_iterator(dir_timetables, line):
         # timetable_file is the name of the file describing the given bus schedule for the given stop. I want to
         # extract schedule for the given brigade at the time when I have bus data
         with open(timetable_file) as file:
@@ -211,11 +210,7 @@ def calc_delays(dir_busestrams: str, dir_timetables: str, dir_stops_coord: str,
     # To filled in the loop and returned
     delays_dict = dict()
 
-    # dir_to_busestrams has structure: dir_to_busestrams / "line/brigade/vehicle.txt"
-    p = Path(dir_busestrams).glob('*/*/*')
-    # files_list is a list of all the files in the directory dir_to_busestrams
-    files_list = [x for x in p if x.is_file()]
-    for bus_file in files_list:
+    for bus_file in bus_data_iterator(dir_busestrams):
         # Now bus schedule contains info about closest positions also
         bus_schedule = dist_bus_from_stop(bus_file_name=bus_file,
                                           dir_timetables=dir_timetables,

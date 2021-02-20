@@ -1,4 +1,5 @@
 from pathlib import Path
+import sys
 import numpy as np
 
 
@@ -35,12 +36,38 @@ def bus_data_iterator(dir_to_busestrams: str) -> list:
     :return: List.
     """
 
+    # Check if the directory exists:
+    try:
+        if not Path(dir_to_busestrams).exists():
+            raise FileNotFoundError(f"Error! This directory does not exist: {dir_to_busestrams}")
+    except FileNotFoundError as er:
+        print(er)
+        sys.exit("Due to the non existing directory I have to shut down the program.")
+        
     # dir_to_busestrams has the following structure: dir_to_busestrams / "line/brigade/vehicle.txt"
 
     paths_in_dir = Path(dir_to_busestrams).glob('*/*/*')
     # files_list is a list of all the files in the directory dir_to_busestrams
     bus_files_list = [x for x in paths_in_dir if x.is_file()]
+
     return bus_files_list
+
+
+def timetables_iterator(dir_to_timetables: str, line: str) -> list:
+
+    # check if the directory exists:
+    try:
+        if not Path(dir_to_timetables).exists():
+            raise FileNotFoundError(f"Error! This directory does not exist: '{dir_to_timetables}'")
+    except FileNotFoundError as er:
+        print(er)
+        sys.exit("Due to the non existing directory I have to shut down the program.")
+
+    # the files I am looking for have the path structure: dir_timetables / line / busstopId_busstopNr.json
+    p = Path(dir_to_timetables).glob(f"{line}/*")
+    # files_list is a list of all the timetables for the given line at the given stop
+    files_list = [x for x in p if x.is_file()]
+    return files_list
 
 
 def divided_map_area(round_to: int) -> [float, float]:

@@ -51,3 +51,58 @@ def test_calc_delays():
 
     assert locations_dict == correct_locations
 
+
+def test_calc_delays_FileNotFound_1(capsys):
+
+    dir_to_busestrams = "./test_punctuality_analysis_data/calc_delays/busestrams"
+
+    dir_to_timetables = "./test_punctuality_analysis_data/calc_delays/timetables"
+    dir_to_stops_coord = "foo.json"
+
+    try:
+        punctuality_analysis.calc_delays(dir_busestrams=dir_to_busestrams, dir_timetables=dir_to_timetables,
+                                         dir_stops_coord=dir_to_stops_coord)
+    except SystemExit as e:
+        pass
+    out, err = capsys.readouterr()
+    assert out == "[Errno 2] No such file or directory: 'foo.json'\n"
+
+
+def test_calc_delays_FileNotFound_2(capsys):
+
+    dir_to_busestrams = "./test_punctuality_analysis_data/calc_delays/busestrams"
+
+    dir_to_timetables = "./test_punctuality_analysis_data/calc_delays/timetables_foo"
+    dir_to_stops_coord = "./test_punctuality_analysis_data/stops_coord.json"
+
+    try:
+        punctuality_analysis.calc_delays(dir_busestrams=dir_to_busestrams, dir_timetables=dir_to_timetables,
+                                         dir_stops_coord=dir_to_stops_coord)
+    except SystemExit as e:
+        pass
+    out, err = capsys.readouterr()
+    assert out == "Error! This directory does not exist: "\
+                  "'./test_punctuality_analysis_data/calc_delays/timetables_foo'\n"
+
+
+def test_delays_statistics(capsys):
+    "Tests if the info printed by delays_statistics() is correct"
+    dir_to_busestrams = "./test_punctuality_analysis_data/calc_delays/busestrams"
+    dir_to_timetables = "./test_punctuality_analysis_data/calc_delays/timetables"
+    dir_to_stops_coord = "./test_punctuality_analysis_data/stops_coord.json"
+    delays_statistics_correct_output_path = "./test_punctuality_analysis_data/delays_statistics/delays_statistics_output.txt"
+
+    locations_dict = punctuality_analysis.calc_delays(dir_busestrams=dir_to_busestrams,
+                                                      dir_timetables=dir_to_timetables,
+                                                      dir_stops_coord=dir_to_stops_coord)
+    punctuality_analysis.delays_statistics(locations_dict)
+    out, err = capsys.readouterr()
+
+    delays_statistics_correct_output = []
+    with open(delays_statistics_correct_output_path, "r") as f:
+        for line in f:
+            delays_statistics_correct_output.append(line.rstrip())
+
+    out_lines = out.split("\n")
+
+    assert delays_statistics_correct_output == out_lines

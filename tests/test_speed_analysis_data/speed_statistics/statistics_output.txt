@@ -1,0 +1,7 @@
+
+Speed statistics:
+--------------------
+Maximal measured speed: 74.6409733623415
+Percent of times when any bus exceeds 50.0 km/h vs all measurements is 2.54%.
+--------------------
+
