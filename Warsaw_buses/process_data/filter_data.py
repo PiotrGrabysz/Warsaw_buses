@@ -2,16 +2,15 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from . import utils
+
 
 def is_time_monotonically_increasing(dir_to_data: str):
-    p = Path(dir_to_data).glob("*/*/*")
-    # files_list is a list of all files in the directory dir_to_data
-    files_list = [x for x in p if x.is_file()]
 
     errors_log_file = Path("./is_time_monotonically_increasing_errors_log.txt")
     errors_counter = 0
     all_files_counter = 0
-    for bus_file in files_list:
+    for bus_file in utils.bus_data_iterator(dir_to_data):
         bus_data = pd.read_csv(bus_file, names=["Lat", "Lon", "Time"])
         all_files_counter += 1
         # Calculating time differences:
@@ -36,11 +35,8 @@ def is_time_monotonically_increasing(dir_to_data: str):
 
 
 def filter_data_from_non_monotonically_increasing_time(dir_to_data: str):
-    p = Path(dir_to_data).glob("*/*/*")
-    # files_list is a list of all files in the directory dir_to_data
-    files_list = [x for x in p if x.is_file()]
 
-    for bus_file in files_list:
+    for bus_file in utils.bus_data_iterator(dir_to_data):
         bus_data = pd.read_csv(bus_file, names=["Lat", "Lon", "Time"])
         # Calculating time differences:
         time_column = pd.to_datetime(bus_data["Time"]).dt.strftime('%H:%M:%S')
@@ -59,6 +55,20 @@ def filter_data_from_non_monotonically_increasing_time(dir_to_data: str):
 
             bus_data.to_csv(new_file, header=False, index=False)
 
+
+# def remove_stops_with_null_entries(dir_to_stops_coord: str):
+#
+#     try:
+#         with open(dir_to_stops_coord, "r") as f:
+#             stops_coord = json.load(f)
+#     except FileNotFoundError as err:
+#         print(err)
+#         sys.exit()
+#
+#     for stop in stops_coord:
+#         if stop["values"][4]["value"] == 'null' or stop["values"][5]["value"] == 'null':
+#             # If latitude or longitude is null
+#             print(stop)
 
 # def one_brigade_one_vehicle_number(dir_to_data: str):
 #     p = Path(dir_to_data).glob("*/*/*")

@@ -37,23 +37,28 @@ def timetables_request(action: str, busstopId: str = None, busstopNr: str = None
 def timetables_collect_all(dir_to_save: str, verbose: bool = False,
                            resume_from_row: int = 0, repeat_rows_file: Union[None, str] = None):
     """ stops() -> lines_wrt_stop -> timetable_wrt_line_and_stop
-    Jako repeat_rows_file podaj errors_log.txt
+    Use errors_log.txt as repeat_rows_file.
     """
 
-    if repeat_rows_file is not None or resume_from_row > 0:
-        f_path = Path.cwd().joinpath(dir_to_save, "stops_coord.json")
-        with f_path.open("r") as f:
+    stops_coord_path = Path.cwd().joinpath(dir_to_save, "stops_coord.json")
+
+    if stops_coord_path.exists():
+        # stops_coord was already downloaded
+        with stops_coord_path.open("r") as f:
             stops_coord = json.load(f)
         print("Stops coordinates loaded.")
 
     else:
-        stops_coord = timetables_request(action="stops_coord")
-        print("Downloaded bus stops coordinates.")
+        try:
+            stops_coord = timetables_request(action="stops_coord")
+        except requests.exceptions.RequestException as e:
+            print(f"Cannot download stops coordinates! {e}")
+        else:
+            print("Downloaded bus stops coordinates.")
 
         # Saving to a file
         Path(dir_to_save).mkdir(parents=True, exist_ok=True)
-        f_path = Path.cwd().joinpath(dir_to_save, "stops_coord.json")
-        with f_path.open("w") as f:
+        with stops_coord_path.open("w") as f:
             json.dump(stops_coord, f)
         print("Bus stops coordinates saved to a file.")
 
@@ -153,7 +158,6 @@ if __name__ == "__main__":
                                  busstopNr=args.busstopNr, line=args.line)
         print(tmp)
 
-    # IDEA: when velocity is bigger than 50 km/h check the closest bus stop from timetables
     else:
         timetables_collect_all(dir_to_save=args.dir_to_save, verbose=args.verbose, repeat_rows_file=args.repeat_rows_file,
                                resume_from_row=args.resume_from_row)

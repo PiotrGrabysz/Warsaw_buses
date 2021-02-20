@@ -3,6 +3,7 @@
 from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 import pickle
 
 from .utils import dist, bus_data_iterator
@@ -114,11 +115,12 @@ def speed_statistics(dir_to_data: str, speed: float = 50., outlier_speed: float 
           f"{100 * exceeding_speed / total_number_of_records :.2f}%.")
     print("-" * 20)
     # Show the histogram:
-    # speed_numpy = np.array(speed_list)
-    # plt.hist(speed_numpy, bins=30, density=True)
-    # plt.xlabel("Speed in km/h")
-    # plt.ylabel("Percent %")
-    # plt.show()
+    speed_numpy = np.array(speed_list)
+    plt.hist(speed_numpy, bins=30, density=True)
+    plt.xlabel("Speed in km/h")
+    plt.ylabel("Percent %")
+    plt.savefig("./speed_statistics.png")
+    plt.show()
 
 
 def exceeding_the_speed_locations(dir_to_data: str, speed: float, round_to: int = 2,
@@ -218,9 +220,9 @@ if __name__ == "__main__":
         with results_path.open("wb") as f:
             pickle.dump(exceeding_locations_dict, f)
 
-        # I want to find locations were the speed is exceeded significant amount of times
-        thres = 0.9
-        for loc, counts in exceeding_locations_dict.items():
-            exceeding_percent = counts[1] / counts[0]
-            if exceeding_percent > thres:
-                print(f"The speed was exceeded {100*exceeding_percent:.0f}% of times around {loc}.")
+        # # I want to find locations were the speed is exceeded significant amount of times
+        # thres = 0.9
+        # for loc, counts in exceeding_locations_dict.items():
+        #     exceeding_percent = counts[1] / counts[0]
+        #     if exceeding_percent > thres:
+        #         print(f"The speed was exceeded {100*exceeding_percent:.0f}% of times around {loc}.")

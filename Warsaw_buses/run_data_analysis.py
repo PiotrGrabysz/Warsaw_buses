@@ -1,10 +1,9 @@
 import argparse
 from pathlib import Path
 import pickle
-import operator
 from collections import OrderedDict
 
-from Warsaw_buses.process_data import speed_analysis, punctuality_analysis, utils
+from Warsaw_buses.process_data import speed_analysis, punctuality_analysis, utils, filter_data
 
 
 def main():
@@ -14,6 +13,9 @@ def main():
     # Choose what should be analysed:
     parser.add_argument("--punctuality", action="store_true",
                         help="Run punctuality_analysis()")
+    parser.add_argument("--filter", action="store_true",
+                       help="Filters out bus records that are not time monotonous."
+                       )
     parser.add_argument("--calc_speed", action="store_true",
                         help="Run calc_speed(). For the given directory with busestrams data it creates NEW directory "
                              "where in each file a column describing the speed is added. This new directory's name is "
@@ -64,15 +66,9 @@ def main():
         print(f"Using timetables data from the directory {Path(args.dir_to_timetables).absolute()}")
         print(f"Using coordinates of the stops data from the directory {Path(args.dir_to_stops_coord).absolute()}")
 
-    if args.punctuality:
-        print("\nStarts calculating delays...")
-        print(f"It might take a while...")
-
-        delays_dict = punctuality_analysis.calc_delays(dir_busestrams=args.dir_to_busestrams,
-                                                       dir_timetables=args.dir_to_timetables,
-                                                       dir_stops_coord=args.dir_to_stops_coord)
-        punctuality_analysis.delays_statistics(delays_dict=delays_dict)
-
+    if args.filter:
+        filter_data.filter_data_from_non_monotonically_increasing_time(dir_to_data=args.dir_to_busestrams)
+    
     if args.calc_speed:
         print("\nStarts calculating speed...")
         speed_analysis.calc_speed(dir_to_busestrams=args.dir_to_busestrams)
@@ -124,6 +120,15 @@ def main():
         results_path = Path("./speed_exceeded_pickle")
         with results_path.open("wb") as f:
             pickle.dump(exceeding_locations_dict, f)
+
+    if args.punctuality:
+        print("\nStarts calculating delays...")
+        print(f"It might take a while...")
+
+        delays_dict = punctuality_analysis.calc_delays(dir_busestrams=args.dir_to_busestrams,
+                                                       dir_timetables=args.dir_to_timetables,
+                                                       dir_stops_coord=args.dir_to_stops_coord)
+        punctuality_analysis.delays_statistics(delays_dict=delays_dict)
 
 
 if __name__ == "__main__":

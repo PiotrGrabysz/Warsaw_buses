@@ -11,7 +11,7 @@ from .utils import dist, bus_data_iterator, timetables_iterator
 
 
 def get_bus_schedule(line: str, brigade: str, dir_timetables: str, dir_stops_coord: str,
-                     min_time, max_time) -> pd.DataFrame:
+                     min_time, max_time, extended_info: bool=False) -> pd.DataFrame:
     """Create pd.DataFrame describing the schedule for the given line and given brigade.
     :param line: Bus line number
     :param brigade: Bus brigade number
@@ -76,32 +76,47 @@ def get_bus_schedule(line: str, brigade: str, dir_timetables: str, dir_stops_coo
                     # of the stop and the direction
                     for stop in stops_coord:
                         if (stop["values"][0]["value"]) == stop_id and (stop["values"][1]["value"] == stop_nr):
-                            stop_name = stop["values"][2]["value"]
                             stop_lat = stop["values"][4]["value"]
                             stop_lon = stop["values"][5]["value"]
-                            direction = stop["values"][6]["value"]
+                            if extended_info:
+                                stop_name = stop["values"][2]["value"]
+                                direction = stop["values"][6]["value"]
 
-                    vals = [record["values"][3]["value"],
-                            stop_time,
-                            stop_id,
-                            stop_nr,
-                            stop_name,
-                            float(stop_lat),
-                            float(stop_lon),
-                            direction
-                            ]
-                    keys = ["direction",
-                            "arrives_at",  # the time when the bus should arrive at this stop
-                            "busstopId",
-                            "busstopNr",
-                            "name",  # the name of the stop
-                            "busstop_latitude",
-                            "busstop_longitude",
-                            "next_stop"
-                            ]
+                    # It sometimes happens, that the lat and lon of a stop are 'null'. In such situation they are not
+                    # appended to the bus_schedule TODO: in future, remove them after downloading
+                    if stop_lat != "null" and stop_lon != "null":
+                        if extended_info:
+                            vals = [record["values"][3]["value"],
+                                    stop_time,
+                                    stop_id,
+                                    stop_nr,
+                                    stop_name,
+                                    float(stop_lat),
+                                    float(stop_lon),
+                                    direction
+                                    ]
+                            keys = ["direction",
+                                    "arrives_at",  # the time when the bus should arrive at this stop
+                                    "busstopId",
+                                    "busstopNr",
+                                    "name",  # the name of the stop
+                                    "busstop_latitude",
+                                    "busstop_longitude",
+                                    "next_stop"
+                                    ]
+                        else:
+                            # If extended_info == False
+                            vals = [stop_time,
+                                    float(stop_lat),
+                                    float(stop_lon),
+                                    ]
+                            keys = ["arrives_at",  # the time when the bus should arrive at this stop
+                                    "busstop_latitude",
+                                    "busstop_longitude",
+                                    ]
 
-                    row_series = pd.Series(vals, keys)
-                    bus_schedule = bus_schedule.append(row_series, ignore_index=True)
+                        row_series = pd.Series(vals, keys)
+                        bus_schedule = bus_schedule.append(row_series, ignore_index=True)
     return bus_schedule
 
 
@@ -283,9 +298,9 @@ if __name__ == "__main__":
                         help="The name of the file with bus stops coordinates.")
     args = parser.parse_args()
 
-    delays_dict = calc_delays(dir_busestrams=args.dir_busestrams,
-                              dir_timetables=args.dir_timetables,
-                              dir_stops_coord=args.dir_stops_coord,
+    delays_dict = calc_delays(dir_busestrams=args.dir_to_busestrams,
+                              dir_timetables=args.dir_to_timetables,
+                              dir_stops_coord=args.dir_to_stops_coord,
                               max_speed_around_the_stop=40.,
                               time_weight=0.001
                               )

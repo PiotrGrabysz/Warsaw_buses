@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 import sys
 import numpy as np
 
@@ -81,3 +82,17 @@ def divided_map_area(round_to: int) -> [float, float]:
     width = dist(lat1, lon1, lat1, lon2)
 
     return height, width
+
+
+def how_many_stop(dir_to_stops_coord: str) -> None:
+    """How many records are int stops coord"""
+    try:
+        with open(dir_to_stops_coord, "r") as f:
+            stops_coord = json.load(f)
+    except FileNotFoundError as err:
+        print(err)
+        sys.exit()
+
+    for counter, _ in enumerate(stops_coord):
+        pass
+    print(f"There are {counter+1} stops.")
