@@ -1,12 +1,8 @@
 <img width="638" alt="sample_map" src="https://user-images.githubusercontent.com/58878073/109390984-03cd6a80-7915-11eb-9c5f-550dac456cd2.png">
 
-# Warsaw buses
+# Final Assignment 
 
-This project is the final assignment made for the Tools Supporting Data Analysis in Python classes, fall semester of 2020. It uses data from https://api.um.warszawa.pl to analyze the speed which the buses go with and their punctuality.
-
-This is the very first version of the project.
-
-### Content
+This project is the final assignment made for the Tools Supporting Data Analysis in Python classes, fall semester of 2020.
 
 This project consists of a two parts:
 
@@ -16,7 +12,7 @@ This project consists of a two parts:
 
 
 * processesing the data. You can make analysis of:
-    + speed which the buses go with including locations where the speed is exceeded significantly often. For now it is assume that the buses go in a straight line.
+    + speed which the buses go with including locations where the speed is exceeded significantly often.
     + buses punctuality. 
 
 ### Instalation
